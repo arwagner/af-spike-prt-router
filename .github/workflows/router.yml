@@ -1,0 +1,58 @@
+name: router
+on:
+  workflow_call:
+    inputs:
+      note:
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show context (no checkout anywhere)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          LABEL: ${{ github.event.label.name }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_ID: ${{ github.repository_id }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          JOB_WORKFLOW_REPO: ${{ job.workflow_repository }}
+          JOB_WORKFLOW_SHA: ${{ job.workflow_sha }}
+          ACTOR: ${{ github.actor }}
+          TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          SENDER: ${{ github.event.sender.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_IS_PR: ${{ github.event.issue.pull_request != null }}
+          HEAD_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_FULL_NAME: ${{ github.event.pull_request.base.repo.full_name }}
+          HEAD_FORK_FLAG: ${{ github.event.pull_request.head.repo.fork }}
+          HEAD_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
+          HEAD_REPO_ID: ${{ github.event.pull_request.head.repo.id }}
+          BASE_REPO_ID: ${{ github.event.pull_request.base.repo.id }}
+          HEAD_LABEL: ${{ github.event.pull_request.head.label }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          AUTHOR_ASSOC: ${{ github.event.pull_request.author_association }}
+          # Candidate fork-detection expressions
+          E1_FULLNAME_NE_REPO: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+          E2_FULLNAME_NE_BASE: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name }}
+          E3_HEAD_REPO_FORK: ${{ github.event.pull_request.head.repo.fork }}
+          E4_HEAD_ID_NE_BASE_ID: ${{ github.event.pull_request.head.repo.id != github.event.pull_request.base.repo.id }}
+          E5_HEAD_ID_NE_REPO_ID: ${{ github.event.pull_request.head.repo.id != github.repository_id }}
+          E6_HEAD_OWNER_NE_OWNER: ${{ github.event.pull_request.head.repo.owner.login != github.repository_owner }}
+          E7_ROBUST: ${{ github.event.pull_request && github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name }}
+          INPUT_NOTE: ${{ inputs.note }}
+        run: |
+          env | grep -E '^(EVENT_NAME|ACTION|LABEL|REPOSITORY|REPOSITORY_OWNER|REPOSITORY_ID|REF|SHA|WORKFLOW_REF|JOB_WORKFLOW_REPO|JOB_WORKFLOW_SHA|ACTOR|TRIGGERING_ACTOR|SENDER|PR_NUMBER|ISSUE_NUMBER|ISSUE_IS_PR|HEAD_.*|BASE_.*|AUTHOR_ASSOC|E[0-9]_.*|INPUT_NOTE)=' | sort
+          echo "--- workspace contents (expect empty: nothing checked out) ---"
+          ls -la "$GITHUB_WORKSPACE"
